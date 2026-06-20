@@ -32,7 +32,12 @@ form.addEventListener("submit", async (e) => {
 
     photoUrl = data.publicUrl;
   }
+const { data: { user }, error: userError } = await sb.auth.getUser();
 
+if (!user) {
+  message.innerHTML = "Please login first!";
+  return;
+}
   const customer = {
     name: document.getElementById("name").value,
     email: document.getElementById("email").value,
