@@ -1,8 +1,7 @@
 const SUPABASE_URL = "https://qrskdnptjtjsuvuutvdz.supabase.co";
 const SUPABASE_KEY = "sb_publishable_3g4NKbhvEduQXGfCnUQnUw_zwPpUNtf";
 
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 const form = document.getElementById("customerForm");
 const message = document.getElementById("message");
 
@@ -16,8 +15,8 @@ form.addEventListener("submit", async (e) => {
     address: document.getElementById("address").value
   };
 
-  const { error } = await supabase
-    .from("customers")
+const { error } = await sb
+  .from("customers")
     .insert([customer]);
 
   if (error) {
