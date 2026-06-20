@@ -86,3 +86,10 @@ tr {
     object-fit: cover;
     border-radius: 8px;
 }
+body {
+    background-image: url("768giu.png");
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+}
