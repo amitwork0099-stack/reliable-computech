@@ -119,6 +119,7 @@ document.getElementById("viewBtn").addEventListener("click", () => {
   message.innerHTML = "";
   document.getElementById("addCustomerSection").style.display = "none";
   document.getElementById("customerSection").style.display = "block";
+  document.getElementById("searchInput").style.display = "block";
   loadCustomers();
 });
 document.getElementById("searchInput").addEventListener("input", () => {
