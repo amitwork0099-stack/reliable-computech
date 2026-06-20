@@ -95,3 +95,20 @@ body {
     background-repeat: no-repeat;
     background-attachment: fixed;
 }
+.editBtn,
+.saveBtn {
+    width: auto;          /* override full width */
+    padding: 6px 10px;
+    margin-top: 0;
+    background: black !important;
+    color: white;
+    border: none;
+    cursor: pointer;
+    font-size: 14px;
+    border-radius: 4px;
+}
+
+.editBtn:hover,
+.saveBtn:hover {
+    background: #222 !important;
+}
