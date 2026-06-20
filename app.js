@@ -101,10 +101,7 @@ async function loadCustomers() {
   });
 }
 
-document.getElementById("viewCustomersBtn").addEventListener("click", () => {
-  document.getElementById("customerSection").style.display = "block";
-  loadCustomers();
-});
+
 document.getElementById("addBtn").addEventListener("click", () => {
   document.getElementById("addCustomerSection").style.display = "block";
   document.getElementById("customerSection").style.display = "none";
