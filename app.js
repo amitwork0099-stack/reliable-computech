@@ -103,3 +103,7 @@ async function loadCustomers() {
 
 // Load customers when page opens
 loadCustomers();
+document.getElementById("viewCustomersBtn").addEventListener("click", () => {
+  document.getElementById("customerSection").style.display = "block";
+  loadCustomers();
+});
