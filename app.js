@@ -5,14 +5,16 @@ const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 const form = document.getElementById("customerForm");
 const message = document.getElementById("message");
 
+// =======================
+// ADD CUSTOMER
+// =======================
 form.addEventListener("submit", async (e) => {
   e.preventDefault();
 
   const photoFile = document.getElementById("photo").files[0];
-
   let photoUrl = "";
 
-  // Upload photo if selected
+  // Upload photo
   if (photoFile) {
     const fileName = Date.now() + "_" + photoFile.name;
 
@@ -21,8 +23,8 @@ form.addEventListener("submit", async (e) => {
       .upload(fileName, photoFile);
 
     if (uploadError) {
-      message.innerHTML = "Photo upload failed!";
       console.log(uploadError);
+      message.innerHTML = "Photo upload failed!";
       return;
     }
 
@@ -32,37 +34,41 @@ form.addEventListener("submit", async (e) => {
 
     photoUrl = data.publicUrl;
   }
-const { data: { user }, error: userError } = await sb.auth.getUser();
 
-if (!user) {
-  message.innerHTML = "Please login first!";
-  return;
-}
+  // Get user (Step 3 FIX)
+  const { data: { user }, error: userError } = await sb.auth.getUser();
+
+  if (!user) {
+    message.innerHTML = "Please login first!";
+    return;
+  }
+
+  // FIXED OBJECT (comma + user_id added)
   const customer = {
     name: document.getElementById("name").value,
     email: document.getElementById("email").value,
     phone: document.getElementById("phone").value,
     address: document.getElementById("address").value,
-    photo_url: photoUrl
-      user_id: user.id   
+    photo_url: photoUrl,
+    user_id: user.id
   };
 
   const { data, error } = await sb
-  .from("customers")
-  .insert([customer])
-  .select()
-  .single();
+    .from("customers")
+    .insert([customer])
+    .select()
+    .single();
 
   if (error) {
-    message.innerHTML = "Error saving customer!";
     console.log(error);
+    message.innerHTML = "Error saving customer!";
   } else {
     const today = new Date().toLocaleDateString();
 
     message.innerHTML = `
       <div style="color:green;font-weight:bold;">
-      Customer saved successfully.<br><br>
-      Thank you for visiting RELIABLE COMPUTECH on ${today}. Your work will be completed soon. We will inform you once our job is completed.
+        Customer saved successfully.<br><br>
+        Thank you for visiting RELIABLE COMPUTECH on ${today}.
       </div>
     `;
 
@@ -70,15 +76,19 @@ if (!user) {
     loadCustomers();
   }
 });
+
+// =======================
+// FILE NAME DISPLAY
+// =======================
 document.getElementById("photo").addEventListener("change", function () {
   const file = this.files[0];
-
-  if (file) {
-    document.getElementById("fileName").textContent = file.name;
-  } else {
-    document.getElementById("fileName").textContent = "No file selected";
-  }
+  document.getElementById("fileName").textContent =
+    file ? file.name : "No file selected";
 });
+
+// =======================
+// LOAD CUSTOMERS
+// =======================
 async function loadCustomers() {
   const { data, error } = await sb
     .from("customers")
@@ -92,34 +102,39 @@ async function loadCustomers() {
   const customerBody = document.getElementById("customerBody");
   customerBody.innerHTML = "";
 
-  const searchText = document.getElementById("searchInput").value.toLowerCase();
+  const searchText = document
+    .getElementById("searchInput")
+    .value
+    .toLowerCase();
 
-data
-.filter(customer =>
-  (customer.name || "").toLowerCase().includes(searchText) ||
-  (customer.phone || "").toLowerCase().includes(searchText)
-)
-.forEach(customer => {
-    customerBody.innerHTML += `
-      <tr>
-        <td>
-          <img src="${customer.photo_url}" class="customer-photo">
-        </td>
-        <td contenteditable="true">${customer.name || ""}</td>
-        <td contenteditable="true">${customer.email || ""}</td>
-        <td contenteditable="true">${customer.phone || ""}</td>
-        <td contenteditable="true">${customer.address || ""}</td>
-      </tr>
-    `;
-  });
+  data
+    .filter(customer =>
+      (customer.name || "").toLowerCase().includes(searchText) ||
+      (customer.phone || "").toLowerCase().includes(searchText)
+    )
+    .forEach(customer => {
+      customerBody.innerHTML += `
+        <tr>
+          <td>
+            <img src="${customer.photo_url}" class="customer-photo">
+          </td>
+          <td contenteditable="true">${customer.name || ""}</td>
+          <td contenteditable="true">${customer.email || ""}</td>
+          <td contenteditable="true">${customer.phone || ""}</td>
+          <td contenteditable="true">${customer.address || ""}</td>
+        </tr>
+      `;
+    });
 }
 
-
+// =======================
+// BUTTONS
+// =======================
 document.getElementById("addBtn").addEventListener("click", () => {
   message.innerHTML = "";
   document.getElementById("addCustomerSection").style.display = "block";
   document.getElementById("customerSection").style.display = "none";
-    document.getElementById("searchInput").style.display = "none"; // ✅ ADD THIS
+  document.getElementById("searchInput").style.display = "none";
 });
 
 document.getElementById("viewBtn").addEventListener("click", () => {
@@ -129,6 +144,7 @@ document.getElementById("viewBtn").addEventListener("click", () => {
   document.getElementById("searchInput").style.display = "block";
   loadCustomers();
 });
+
 document.getElementById("searchInput").addEventListener("input", () => {
   loadCustomers();
 });
