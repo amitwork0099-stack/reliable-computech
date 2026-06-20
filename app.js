@@ -151,3 +151,49 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
 });
+document.addEventListener("click", async (e) => {
+
+  // ✏️ EDIT
+  if (e.target.classList.contains("editBtn")) {
+    const row = e.target.closest("tr");
+
+    row.querySelectorAll(".name, .email, .phone, .address")
+      .forEach(td => td.contentEditable = "true");
+
+    row.querySelector(".editBtn").style.display = "none";
+    row.querySelector(".saveBtn").style.display = "inline-block";
+  }
+
+  // 💾 SAVE
+  if (e.target.classList.contains("saveBtn")) {
+    const row = e.target.closest("tr");
+    const id = row.dataset.id;
+
+    const updated = {
+      name: row.querySelector(".name").innerText,
+      email: row.querySelector(".email").innerText,
+      phone: row.querySelector(".phone").innerText,
+      address: row.querySelector(".address").innerText
+    };
+
+    const { error } = await sb
+      .from("customers")
+      .update(updated)
+      .eq("id", id);
+
+    if (error) {
+      console.log(error);
+      alert("Update failed!");
+      return;
+    }
+
+    row.querySelectorAll(".name, .email, .phone, .address")
+      .forEach(td => td.contentEditable = "false");
+
+    row.querySelector(".editBtn").style.display = "inline-block";
+    row.querySelector(".saveBtn").style.display = "none";
+
+    alert("Saved successfully!");
+  }
+
+});
