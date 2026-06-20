@@ -41,9 +41,11 @@ form.addEventListener("submit", async (e) => {
     photo_url: photoUrl
   };
 
-  const { error } = await sb
-    .from("customers")
-    .insert([customer]);
+  const { data, error } = await sb
+  .from("customers")
+  .insert([customer])
+  .select()
+  .single();
 
   if (error) {
     message.innerHTML = "Error saving customer!";
