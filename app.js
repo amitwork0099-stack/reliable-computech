@@ -72,3 +72,33 @@ document.getElementById("photo").addEventListener("change", function () {
     document.getElementById("fileName").textContent = "No file selected";
   }
 });
+async function loadCustomers() {
+  const { data, error } = await sb
+    .from("customers")
+    .select("*");
+
+  if (error) {
+    console.log(error);
+    return;
+  }
+
+  const customerBody = document.getElementById("customerBody");
+  customerBody.innerHTML = "";
+
+  data.forEach(customer => {
+    customerBody.innerHTML += `
+      <tr>
+        <td>
+          <img src="${customer.photo_url}" class="customer-photo">
+        </td>
+        <td contenteditable="true">${customer.name || ""}</td>
+        <td contenteditable="true">${customer.email || ""}</td>
+        <td contenteditable="true">${customer.phone || ""}</td>
+        <td contenteditable="true">${customer.address || ""}</td>
+      </tr>
+    `;
+  });
+}
+
+// Load customers when page opens
+loadCustomers();
