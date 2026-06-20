@@ -106,18 +106,26 @@ document.addEventListener("DOMContentLoaded", () => {
         (customer.phone || "").toLowerCase().includes(searchText)
       )
       .forEach(customer => {
-        customerBody.innerHTML += `
-          <tr>
-            <td>
-              <img src="${customer.photo_url}" class="customer-photo">
-            </td>
-         <td>${customer.name || ""}</td>
-<td>${customer.email || ""}</td>
-<td>${customer.phone || ""}</td>
-<td>${customer.address || ""}</td>
-          </tr>
-        `;
-      });
+  customerBody.innerHTML += `
+    <tr data-id="${customer.id}">
+
+      <td>
+        <img src="${customer.photo_url}" class="customer-photo">
+      </td>
+
+      <td class="name">${customer.name || ""}</td>
+      <td class="email">${customer.email || ""}</td>
+      <td class="phone">${customer.phone || ""}</td>
+      <td class="address">${customer.address || ""}</td>
+
+      <td>
+        <button class="editBtn" title="Edit">✏️</button>
+        <button class="saveBtn" title="Save" style="display:none;">💾</button>
+      </td>
+
+    </tr>
+  `;
+});
   }
 
   // =======================
