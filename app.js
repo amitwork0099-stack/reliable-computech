@@ -44,6 +44,7 @@ if (!user) {
     phone: document.getElementById("phone").value,
     address: document.getElementById("address").value,
     photo_url: photoUrl
+      user_id: user.id   
   };
 
   const { data, error } = await sb
