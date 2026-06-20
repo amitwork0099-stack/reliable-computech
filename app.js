@@ -61,6 +61,7 @@ form.addEventListener("submit", async (e) => {
     `;
 
     form.reset();
+    loadCustomers();
   }
 });
 document.getElementById("photo").addEventListener("change", function () {
