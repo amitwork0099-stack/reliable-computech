@@ -61,3 +61,12 @@ form.addEventListener("submit", async (e) => {
     form.reset();
   }
 });
+document.getElementById("photo").addEventListener("change", function () {
+  const file = this.files[0];
+
+  if (file) {
+    document.getElementById("fileName").textContent = file.name;
+  } else {
+    document.getElementById("fileName").textContent = "No file selected";
+  }
+});
