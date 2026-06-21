@@ -100,12 +100,15 @@ document.addEventListener("DOMContentLoaded", () => {
       .value
       .toLowerCase();
 
-    data
-      .filter(customer =>
-        (customer.name || "").toLowerCase().includes(searchText) ||
-        (customer.phone || "").toLowerCase().includes(searchText)
-      )
-      .forEach(customer => {
+   const filteredCustomers = data.filter(customer =>
+  (customer.name || "").toLowerCase().includes(searchText) ||
+  (customer.phone || "").toLowerCase().includes(searchText)
+);
+
+document.getElementById("customerCountHeading").innerText =
+  `Customers (${filteredCustomers.length})`;
+
+filteredCustomers.forEach(customer => {
   customerBody.innerHTML += `
     <tr data-id="${customer.id}">
 
