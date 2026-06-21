@@ -96,8 +96,9 @@ body {
     background-attachment: fixed;
 }
 .editBtn,
-.saveBtn {
-    width: auto;          /* override full width */
+.saveBtn,
+.deleteBtn {
+    width: auto;
     padding: 6px 10px;
     margin-top: 0;
     background: black !important;
@@ -109,6 +110,7 @@ body {
 }
 
 .editBtn:hover,
-.saveBtn:hover {
+.saveBtn:hover,
+.deleteBtn:hover {
     background: #222 !important;
 }
