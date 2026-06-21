@@ -18,7 +18,6 @@ document.addEventListener("DOMContentLoaded", () => {
     let photoUrl = "";
     let fileName = "";
 
-    // Upload photo
     if (photoFile) {
       fileName = Date.now() + "_" + photoFile.name;
 
@@ -27,7 +26,7 @@ document.addEventListener("DOMContentLoaded", () => {
         .upload(fileName, photoFile);
 
       if (uploadError) {
-        console.log(uploadError);
+        console.log("UPLOAD ERROR:", uploadError);
         message.innerHTML = "Photo upload failed!";
         return;
       }
@@ -48,9 +47,7 @@ document.addEventListener("DOMContentLoaded", () => {
       photo_file: fileName
     };
 
-    const { error } = await sb
-      .from("customers")
-      .insert([customer]);
+    const { error } = await sb.from("customers").insert([customer]);
 
     if (error) {
       console.log("INSERT ERROR:", error);
@@ -64,15 +61,6 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   // =======================
-  // FILE NAME DISPLAY
-  // =======================
-  document.getElementById("photo").addEventListener("change", function () {
-    const file = this.files[0];
-    document.getElementById("fileName").textContent =
-      file ? file.name : "No file selected";
-  });
-
-  // =======================
   // LOAD CUSTOMERS
   // =======================
   async function loadCustomers() {
@@ -82,45 +70,36 @@ document.addEventListener("DOMContentLoaded", () => {
       .select("*");
 
     if (error) {
-      console.log(error);
+      console.log("LOAD ERROR:", error);
       return;
     }
 
     const customerBody = document.getElementById("customerBody");
     customerBody.innerHTML = "";
 
-    const searchText = document
-      .getElementById("searchInput")
-      .value
-      .toLowerCase();
+    const searchText = document.getElementById("searchInput").value.toLowerCase();
 
-    const filteredCustomers = data.filter(customer =>
-      (customer.name || "").toLowerCase().includes(searchText) ||
-      (customer.phone || "").toLowerCase().includes(searchText)
+    const filtered = data.filter(c =>
+      (c.name || "").toLowerCase().includes(searchText) ||
+      (c.phone || "").toLowerCase().includes(searchText)
     );
 
     document.getElementById("customerCountHeading").innerText =
-      `Customers (${filteredCustomers.length})`;
+      `Customers (${filtered.length})`;
 
-    filteredCustomers.forEach(customer => {
+    filtered.forEach(customer => {
       customerBody.innerHTML += `
         <tr data-id="${customer.id}" data-file="${customer.photo_file || ""}">
-
-          <td>
-            <img src="${customer.photo_url}" class="customer-photo">
-          </td>
-
+          <td><img src="${customer.photo_url}" class="customer-photo"></td>
           <td class="name">${customer.name || ""}</td>
           <td class="email">${customer.email || ""}</td>
           <td class="phone">${customer.phone || ""}</td>
           <td class="address">${customer.address || ""}</td>
-
           <td>
             <button class="editBtn">✏️</button>
             <button class="saveBtn" style="display:none;">💾</button>
             <button class="deleteBtn">🗑️</button>
           </td>
-
         </tr>
       `;
     });
@@ -144,10 +123,7 @@ document.addEventListener("DOMContentLoaded", () => {
     loadCustomers();
   });
 
-  document.getElementById("searchInput").addEventListener("input", () => {
-    loadCustomers();
-  });
-
+  document.getElementById("searchInput").addEventListener("input", loadCustomers);
 });
 
 
@@ -156,7 +132,7 @@ document.addEventListener("DOMContentLoaded", () => {
 // =======================
 document.addEventListener("click", async (e) => {
 
-  // ✏️ EDIT
+  // EDIT
   if (e.target.classList.contains("editBtn")) {
     const row = e.target.closest("tr");
 
@@ -167,7 +143,7 @@ document.addEventListener("click", async (e) => {
     row.querySelector(".saveBtn").style.display = "inline-block";
   }
 
-  // 💾 SAVE
+  // SAVE
   if (e.target.classList.contains("saveBtn")) {
     const row = e.target.closest("tr");
     const id = row.dataset.id;
@@ -179,13 +155,10 @@ document.addEventListener("click", async (e) => {
       address: row.querySelector(".address").innerText
     };
 
-    const { error } = await sb
-      .from("customers")
-      .update(updated)
-      .eq("id", id);
+    const { error } = await sb.from("customers").update(updated).eq("id", id);
 
     if (error) {
-      console.log(error);
+      console.log("UPDATE ERROR:", error);
       alert(error.message);
       return;
     }
@@ -196,49 +169,48 @@ document.addEventListener("click", async (e) => {
     row.querySelector(".editBtn").style.display = "inline-block";
     row.querySelector(".saveBtn").style.display = "none";
 
-    alert("Saved successfully!");
+    alert("Saved!");
   }
 
-  // 🗑️ DELETE
+  // DELETE (FINAL FIX)
   if (e.target.classList.contains("deleteBtn")) {
 
-  if (!confirm("Delete this customer?")) return;
+    const row = e.target.closest("tr");
+    const id = row?.dataset?.id;
+    const fileName = row?.dataset?.file;
 
-  const row = e.target.closest("tr");
-  const id = row.dataset.id;
+    if (!id) {
+      alert("Invalid row id");
+      return;
+    }
 
-  // ✅ FIXED FILE NAME EXTRACTION
-  let fileName = row.dataset.file;
+    if (!confirm("Delete this customer?")) return;
 
-  // fallback (if old rows don't have dataset.file)
-  if (!fileName) {
-    const img = row.querySelector("img");
-    const url = new URL(img.src);
-    fileName = url.pathname.split("/").pop();
+    // 1. delete from DB FIRST (important)
+    const { error: dbError } = await sb
+      .from("customers")
+      .delete()
+      .eq("id", id);
+
+    if (dbError) {
+      console.log("DELETE DB ERROR:", dbError);
+      alert(dbError.message);
+      return;
+    }
+
+    // 2. delete file AFTER DB success
+    if (fileName) {
+      const { error: storageError } = await sb
+        .storage
+        .from("customer-photos")
+        .remove([fileName]);
+
+      if (storageError) {
+        console.log("STORAGE DELETE ERROR:", storageError);
+      }
+    }
+
+    row.remove();
+    alert("Deleted successfully!");
   }
-
-  // 1. delete DB FIRST (important)
-  const { error: dbError } = await sb
-    .from("customers")
-    .delete()
-    .eq("id", id);
-
-  if (dbError) {
-    console.log(dbError);
-    alert("DB delete failed!");
-    return;
-  }
-
-  // 2. delete image (non-blocking safe)
-  if (fileName) {
-    await sb.storage
-      .from("customer-photos")
-      .remove([fileName]);
-  }
-
-  // 3. remove from UI
-  row.remove();
-
-  alert("Customer deleted successfully!");
-}
 });
