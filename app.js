@@ -14,11 +14,13 @@ document.addEventListener("DOMContentLoaded", () => {
     e.preventDefault();
 
     const photoFile = document.getElementById("photo").files[0];
+
     let photoUrl = "";
+    let fileName = "";
 
     // Upload photo
     if (photoFile) {
-      const fileName = Date.now() + "_" + photoFile.name;
+      fileName = Date.now() + "_" + photoFile.name;
 
       const { error: uploadError } = await sb.storage
         .from("customer-photos")
@@ -37,38 +39,28 @@ document.addEventListener("DOMContentLoaded", () => {
       photoUrl = data.publicUrl;
     }
 
-    // ❌ REMOVED user_id (since you don't have login working)
     const customer = {
       name: document.getElementById("name").value,
       email: document.getElementById("email").value,
       phone: document.getElementById("phone").value,
       address: document.getElementById("address").value,
-      photo_url: photoUrl
-        photo_file: fileName   // name
+      photo_url: photoUrl,
+      photo_file: fileName
     };
 
-    const { data, error } = await sb
+    const { error } = await sb
       .from("customers")
-      .insert([customer])
-      .select()
-      .single();
+      .insert([customer]);
 
     if (error) {
       console.log(error);
       message.innerHTML = "Error saving customer!";
-    } else {
-      const today = new Date().toLocaleDateString();
-
-      message.innerHTML = `
-        <div style="color:green;font-weight:bold;">
-          Customer saved successfully.<br><br>
-          Thank you for visiting RELIABLE COMPUTECH on ${today}.
-        </div>
-      `;
-
-      form.reset();
-      loadCustomers();
+      return;
     }
+
+    message.innerHTML = "Customer saved successfully!";
+    form.reset();
+    loadCustomers();
   });
 
   // =======================
@@ -101,36 +93,36 @@ document.addEventListener("DOMContentLoaded", () => {
       .value
       .toLowerCase();
 
-   const filteredCustomers = data.filter(customer =>
-  (customer.name || "").toLowerCase().includes(searchText) ||
-  (customer.phone || "").toLowerCase().includes(searchText)
-);
+    const filteredCustomers = data.filter(customer =>
+      (customer.name || "").toLowerCase().includes(searchText) ||
+      (customer.phone || "").toLowerCase().includes(searchText)
+    );
 
-document.getElementById("customerCountHeading").innerText =
-  `Customers (${filteredCustomers.length})`;
+    document.getElementById("customerCountHeading").innerText =
+      `Customers (${filteredCustomers.length})`;
 
-filteredCustomers.forEach(customer => {
-  customerBody.innerHTML += `
-    <tr data-id="${customer.id}">
+    filteredCustomers.forEach(customer => {
+      customerBody.innerHTML += `
+        <tr data-id="${customer.id}" data-file="${customer.photo_file || ''}">
 
-      <td>
-        <img src="${customer.photo_url}" class="customer-photo">
-      </td>
+          <td>
+            <img src="${customer.photo_url}" class="customer-photo">
+          </td>
 
-      <td class="name">${customer.name || ""}</td>
-      <td class="email">${customer.email || ""}</td>
-      <td class="phone">${customer.phone || ""}</td>
-      <td class="address">${customer.address || ""}</td>
+          <td class="name">${customer.name || ""}</td>
+          <td class="email">${customer.email || ""}</td>
+          <td class="phone">${customer.phone || ""}</td>
+          <td class="address">${customer.address || ""}</td>
 
-     <td>
-  <button class="editBtn" title="Edit">✏️</button>
-  <button class="saveBtn" title="Save" style="display:none;">💾</button>
-  <button class="deleteBtn" title="Delete">🗑️</button>
-</td>
+          <td>
+            <button class="editBtn">✏️</button>
+            <button class="saveBtn" style="display:none;">💾</button>
+            <button class="deleteBtn">🗑️</button>
+          </td>
 
-    </tr>
-  `;
-});
+        </tr>
+      `;
+    });
   }
 
   // =======================
@@ -156,6 +148,10 @@ filteredCustomers.forEach(customer => {
   });
 
 });
+
+// =======================
+// GLOBAL CLICK EVENTS
+// =======================
 document.addEventListener("click", async (e) => {
 
   // ✏️ EDIT
@@ -200,30 +196,36 @@ document.addEventListener("click", async (e) => {
 
     alert("Saved successfully!");
   }
-if (e.target.classList.contains("deleteBtn")) {
 
-  if (!confirm("Delete this customer?")) return;
+  // 🗑️ DELETE (FIXED 100%)
+  if (e.target.classList.contains("deleteBtn")) {
 
-  const row = e.target.closest("tr");
-  const id = row.dataset.id;
-const photoUrl = row.querySelector("img").src;
-const fileName = photoUrl.split("/customer-photos/")[1].split("?")[0];
-  await sb.storage
-    .from("customer-photos")
-    .remove([fileName]);
-  const { error } = await sb
-    .from("customers")
-    .delete()
-    .eq("id", id);
+    if (!confirm("Delete this customer?")) return;
 
-  if (error) {
-    console.log(error);
-    alert("Delete failed!");
-    return;
+    const row = e.target.closest("tr");
+    const id = row.dataset.id;
+    const fileName = row.dataset.file;
+
+    // delete image safely
+    if (fileName) {
+      await sb.storage
+        .from("customer-photos")
+        .remove([fileName]);
+    }
+
+    // delete row from DB
+    const { error } = await sb
+      .from("customers")
+      .delete()
+      .eq("id", id);
+
+    if (error) {
+      console.log(error);
+      alert("Delete failed!");
+      return;
+    }
+
+    row.remove();
+    alert("Customer deleted successfully!");
   }
-
-  row.remove();
-
-  alert("Customer deleted successfully!");
-}
 });
