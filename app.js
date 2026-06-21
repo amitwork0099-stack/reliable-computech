@@ -206,8 +206,7 @@ if (e.target.classList.contains("deleteBtn")) {
   const row = e.target.closest("tr");
   const id = row.dataset.id;
 const photoUrl = row.querySelector("img").src;
-  const fileName = photoUrl.split("/").pop();
-
+const fileName = photoUrl.split("/customer-photos/")[1].split("?")[0];
   await sb.storage
     .from("customer-photos")
     .remove([fileName]);
