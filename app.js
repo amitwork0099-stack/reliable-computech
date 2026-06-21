@@ -118,10 +118,11 @@ document.addEventListener("DOMContentLoaded", () => {
       <td class="phone">${customer.phone || ""}</td>
       <td class="address">${customer.address || ""}</td>
 
-      <td>
-        <button class="editBtn" title="Edit">✏️</button>
-        <button class="saveBtn" title="Save" style="display:none;">💾</button>
-      </td>
+     <td>
+  <button class="editBtn" title="Edit">✏️</button>
+  <button class="saveBtn" title="Save" style="display:none;">💾</button>
+  <button class="deleteBtn" title="Delete">🗑️</button>
+</td>
 
     </tr>
   `;
